@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: My API
+  description: "API"
+  version: v1
+servers:
+- url: http://127.0.0.1:8080
+paths:
+  /box:
+    parameters:
+    - name: box
+      in: query
+      schema:
+        type: array
+        examples:
+        - - -180
+          - -90
+          - 180
+          - 90
+        items:
+          type: number
+          format: float
+          maximum: 1.8e+2
+          minimum: -1.8e+2
+        maxItems: 4
+        minItems: 4
+        prefixItems:
+        - type: number
+          format: float
+          maximum: 1.8e+2
+          minimum: -1.8e+2
+        - type: number
+          format: float
+          maximum: 9e+1
+          minimum: -9e+1
+        - type: number
+          format: float
+          maximum: 1.8e+2
+          minimum: -1.8e+2
+        - type: number
+          format: float
+          maximum: 9e+1
+          minimum: -9e+1
+      description: 'Four values of latitude and longitude to form a Bounding-Box.'
+    get:
+      description: "Endpoint"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        422:
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
