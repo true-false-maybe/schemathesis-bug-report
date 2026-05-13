@@ -14,7 +14,7 @@ fastapi dev
 Running schemathesis:
 
 ```zsh
-schemathesis --config-file ./schemathesis.toml run ./oas.yaml --url http://127.0.0.1:8000 --wait-for-schema 60 --report junit
+SCHEMATHESIS_HOOKS="./hook.py" schemathesis --config-file ./schemathesis.toml run ./oas.yaml --url http://127.0.0.1:8000 --wait-for-schema 60 --report junit
 ```
 
 Bug which occurs:
@@ -32,141 +32,44 @@ On instance["properties"]["box"]["items"]:
     [{"format":"float","maximum":180.0,"minimum":-180.0,"type":"number"},{"format":"float","maximum":90.0,"minimum":-90.0,"type":"number"},{"format":"float","maximum":180.0,"minimum":-180.0,"type":"number"},{"format":"float","maximum":90.0,"minimum":-90.0,"type":"number"}]
 
     Traceback (most recent call last):
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/engine/run/unit/_executor.py", line 129, in run_test
-        test_function(
-        ~~~~~~~~~~~~~^
-            ctx=ctx,
-            ^^^^^^^^
-        ...<6 lines>...
-            continue_on_failure=continue_on_failure,
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        )
-        ^
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/generation/hypothesis/builder.py", line 280, in test_func
-        def test_wrapper(*args: Any, **kwargs: Any) -> Any:
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/hypothesis/core.py", line 2264, in wrapped_test
-        raise the_error_hypothesis_found
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/_hypothesis.py", line 144, in openapi_cases
-        query_ = generate_parameter(
-            ParameterLocation.QUERY,
-        ...<8 lines>...
-            mix_examples=mix_examples,
-        )
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/_hypothesis.py", line 700, in generate_parameter
-        value, metadata = get_parameters_value(
-                          ~~~~~~~~~~~~~~~~~~~~^
-            explicit,
-            ^^^^^^^^^
-        ...<8 lines>...
-            mix_examples=mix_examples,
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-        )
-        ^
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/_hypothesis.py", line 619, in get_parameters_value
-        strategy = get_parameters_strategy(
-            operation,
-        ...<4 lines>...
-            mix_examples=mix_examples,
-        )
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/_hypothesis.py", line 755, in get_parameters_strategy
-        return container.get_strategy(
-               ~~~~~~~~~~~~~~~~~~~~~~^
-            operation,
-            ^^^^^^^^^^
-        ...<4 lines>...
-            mix_examples=mix_examples,
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-        )
-        ^
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/adapter/parameters.py", line 1118, in get_strategy
-        strategy = strategy_factory(
-            schema_obj,
-        ...<5 lines>...
-            self.name_to_uri,
-        )
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/_hypothesis.py", line 857, in make_negative_strategy
-        return negative_schema(
-            schema,
-        ...<6 lines>...
-            name_to_uri=name_to_uri,
-        )
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/negative/__init__.py", line 149, in negative_schema
-        validator = get_validator(cache_key)
-      File "/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/negative/__init__.py", line 105, in get_validator
-        return cache_key.validator_cls(
-               ~~~~~~~~~~~~~~~~~~~~~~~^
-            cache_key.schema,
-            ^^^^^^^^^^^^^^^^^
-        ...<2 lines>...
-            pattern_options=FANCY_REGEX_OPTIONS,
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        )
-        ^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/engine/run/unit/_case.py", line 81, in run_one_case
+        ctx.cache_outcome(case, exc)
+        ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/engine/context.py", line 125, in cache_outcome
+        self.outcome_cache[hash(case)] = outcome
+                           ~~~~^^^^^^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/generation/case.py", line 206, in __hash__
+        return hash(self.as_curl_command({SCHEMATHESIS_TEST_CASE_HEADER: "0"}))
+                    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/generation/case.py", line 304, in as_curl_command
+        request_data = prepare_request(self, headers, config=self.operation.schema.config.output.sanitization)
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/transport/prepare.py", line 133, in prepare_request
+        kwargs = REQUESTS_TRANSPORT.serialize_case(case, base_url=base_url, headers=headers)
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/transport/requests.py", line 124, in serialize_case
+        excluded_headers = get_exclude_headers(case)
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/transport/prepare.py", line 44, in get_exclude_headers
+        if case.meta is None:
+           ^^^^^^^^^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/generation/case.py", line 288, in meta
+        self._revalidate_metadata()
+        ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/generation/case.py", line 237, in _revalidate_metadata
+        self.operation.schema.revalidate_case_metadata(self)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/schemas.py", line 228, in revalidate_case_metadata
+        is_valid = case._validate_component(location, value, validator_cls)
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/generation/case.py", line 261, in _validate_component
+        return make_validator(container.schema, validator_cls).is_valid(value)
+               ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/opt/homebrew/Cellar/schemathesis/4.18.1/libexec/lib/python3.14/site-packages/schemathesis/core/jsonschema/__init__.py", line 48, in make_validator
+        return validator_cls(schema, **kwargs)
     jsonschema_rs.ValidationError: [{"format":"float","maximum":180.0,"minimum":-180.0,"type":"number"},{"format":"float","maximum":90.0,"minimum":-90.0,"type":"number"},{"format":"float","maximum":180.0,"minimum":-180.0,"type":"number"},{"format":"float","maximum":90.0,"minimum":-90.0,"type":"number"}] is not of types "boolean", "object"
     Failed validating "type" in schema
     On instance["properties"]["box"]["items"]:
         [{"format":"float","maximum":180.0,"minimum":-180.0,"type":"number"},{"format":"float","maximum":90.0,"minimum":-90.0,"type":"number"},{"format":"float","maximum":180.0,"minimum":-180.0,"type":"number"},{"format":"float","maximum":90.0,"minimum":-90.0,"type":"number"}]
-    while generating 'case' from one_of(openapi_cases(operation=APIOperation(path='/box',
-     method='get',
-     definition=,
-     schema=,
-     responses=OpenApiResponses(_inner={'200': OpenApiResponse(status_code='200',
-        definition={'description': 'OK',
-         'content': {'application/json': {'schema': {'type': 'string'}}}},
-        resolver=<schemathesis.specs.openapi.references.ReferenceResolver object at 0x10d1a8980>,
-        scope='file:///Users/user/Projects/schemathesis-bug-report/oas.yaml',
-        adapter=<module 'schemathesis.specs.openapi.adapter.v3_1' from '/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/adapter/v3_1.py'>),
-       '422': OpenApiResponse(status_code='422',
-        definition={'description': 'Error',
-         'content': {'application/json': {'schema': {'type': 'object'}}}},
-        resolver=<schemathesis.specs.openapi.references.ReferenceResolver object at 0x10d1a8980>,
-        scope='file:///Users/user/Projects/schemathesis-bug-report/oas.yaml',
-        adapter=<module 'schemathesis.specs.openapi.adapter.v3_1' from '/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/adapter/v3_1.py'>)},
-      resolver=<schemathesis.specs.openapi.references.ReferenceResolver object at 0x10d1a8980>,
-      scope='file:///Users/user/Projects/schemathesis-bug-report/oas.yaml',
-      adapter=<module 'schemathesis.specs.openapi.adapter.v3_1' from '/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/adapter/v3_1.py'>),
-     security=OpenApiSecurityParameters(_parameters=[]),
-     label='GET /box',
-     app=None,
-     base_url='http://127.0.0.1:8000',
-     path_parameters=,
-     headers=,
-     cookies=,
-     query=,
-     body=,
-     filter_case_tracker=None)), openapi_cases(operation=APIOperation(path='/box',
-     method='get',
-     definition=,
-     schema=,
-     responses=OpenApiResponses(_inner={'200': OpenApiResponse(status_code='200',
-        definition={'description': 'OK',
-         'content': {'application/json': {'schema': {'type': 'string'}}}},
-        resolver=<schemathesis.specs.openapi.references.ReferenceResolver object at 0x10d1a8980>,
-        scope='file:///Users/user/Projects/schemathesis-bug-report/oas.yaml',
-        adapter=<module 'schemathesis.specs.openapi.adapter.v3_1' from '/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/adapter/v3_1.py'>),
-       '422': OpenApiResponse(status_code='422',
-        definition={'description': 'Error',
-         'content': {'application/json': {'schema': {'type': 'object'}}}},
-        resolver=<schemathesis.specs.openapi.references.ReferenceResolver object at 0x10d1a8980>,
-        scope='file:///Users/user/Projects/schemathesis-bug-report/oas.yaml',
-        adapter=<module 'schemathesis.specs.openapi.adapter.v3_1' from '/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/adapter/v3_1.py'>)},
-      resolver=<schemathesis.specs.openapi.references.ReferenceResolver object at 0x10d1a8980>,
-      scope='file:///Users/user/Projects/schemathesis-bug-report/oas.yaml',
-      adapter=<module 'schemathesis.specs.openapi.adapter.v3_1' from '/opt/homebrew/Cellar/schemathesis/4.16.1/libexec/lib/python3.14/site-packages/schemathesis/specs/openapi/adapter/v3_1.py'>),
-     security=OpenApiSecurityParameters(_parameters=[]),
-     label='GET /box',
-     app=None,
-     base_url='http://127.0.0.1:8000',
-     path_parameters=,
-     headers=,
-     cookies=,
-     query=,
-     body=,
-     filter_case_tracker=None), generation_mode=<GenerationMode.NEGATIVE: 'negative'>))
 ```
 
 ### Description:
 
-- This seems to happen because of `prefixItems`
+- This seems to still happen because of `prefixItems`, but seems to be somehow related with hooks
 - Schemathesis seem to not handle parsing it gracefully
